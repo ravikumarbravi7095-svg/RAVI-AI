@@ -9,6 +9,8 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
+    * { box-sizing: border-box; }
+
     body {
       margin: 0;
       font-family: Arial, sans-serif;
@@ -24,57 +26,81 @@
       background: #141d32;
       padding: 30px;
       border-radius: 16px;
-      width: 85%;
-      max-width: 380px;
+      width: 90%;
+      max-width: 400px;
       text-align: center;
+      box-shadow: 0 10px 35px #0008;
     }
 
     h1 { color: #55c8ff; }
 
     input, button {
       width: 100%;
-      padding: 13px;
+      padding: 14px;
       margin: 9px 0;
-      box-sizing: border-box;
       border-radius: 8px;
-      border: none;
       font-size: 16px;
     }
 
-    input { background: white; color: #111; }
+    input {
+      background: white;
+      color: #111;
+      border: none;
+    }
 
     button {
       background: #168cff;
       color: white;
+      border: none;
       cursor: pointer;
       font-weight: bold;
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: wait;
     }
 
     .secondary { background: #34445f; }
 
     #message {
-      overflow-wrap: anywhere;
       line-height: 1.5;
+      overflow-wrap: anywhere;
     }
   </style>
 </head>
 
 <body>
+
   <div class="box">
     <h1>RAVI AI</h1>
-    <h3 id="heading">Create Account</h3>
+    <h3 id="heading">Create Your Account</h3>
 
-    <input id="email" type="email" placeholder="Email Address">
-    <input id="password" type="password" placeholder="Password">
+    <input
+      id="email"
+      type="email"
+      placeholder="Email Address"
+      autocomplete="email"
+    >
 
-    <button id="mainBtn" onclick="submitForm()">Sign Up</button>
+    <input
+      id="password"
+      type="password"
+      placeholder="Password"
+      autocomplete="current-password"
+    >
 
-    <button class="secondary" id="switchBtn" onclick="switchMode()">
-      Already have an account? Login
+    <button id="mainBtn" onclick="submitForm()">
+      Sign Up
     </button>
 
-    <button class="secondary" id="logoutBtn"
-      onclick="logout()" hidden>Logout</button>
+    <button
+      class="secondary"
+      id="switchBtn"
+      onclick="switchMode()"
+    >
+      Already have an account? Login
+    </button>
 
     <p id="message"></p>
   </div>
@@ -85,6 +111,12 @@
 
     const SUPABASE_KEY =
       "sb_publishable_TPZ-w9g6zedWYexUBVSTMA_l76XYhzY";
+
+    const DASHBOARD_URL =
+      "/RAVI-AI/";
+
+    const LOGIN_URL =
+      "https://ravikumarbravi7095-svg.github.io/RAVI-AI/login.html";
 
     const supabaseClient = window.supabase.createClient(
       SUPABASE_URL,
@@ -97,7 +129,7 @@
       isSignup = !isSignup;
 
       document.getElementById("heading").textContent =
-        isSignup ? "Create Account" : "Welcome Back";
+        isSignup ? "Create Your Account" : "Welcome Back";
 
       document.getElementById("mainBtn").textContent =
         isSignup ? "Sign Up" : "Login";
@@ -117,17 +149,21 @@
       const password =
         document.getElementById("password").value;
 
-      const message = document.getElementById("message");
-      const button = document.getElementById("mainBtn");
+      const message =
+        document.getElementById("message");
+
+      const button =
+        document.getElementById("mainBtn");
 
       if (!email || !password) {
-        message.textContent = "Enter email and password.";
+        message.textContent =
+          "Please enter your email and password.";
         return;
       }
 
       if (password.length < 6) {
         message.textContent =
-          "Password must be at least 6 characters.";
+          "Password must contain at least 6 characters.";
         return;
       }
 
@@ -140,23 +176,31 @@
         if (isSignup) {
           result = await supabaseClient.auth.signUp({
             email: email,
-            password: password
+            password: password,
+            options: {
+              emailRedirectTo: LOGIN_URL
+            }
           });
+
         } else {
-          result = await supabaseClient.auth.signInWithPassword({
-            email: email,
-            password: password
-          });
+          result =
+            await supabaseClient.auth.signInWithPassword({
+              email: email,
+              password: password
+            });
         }
 
-        if (result.error) throw result.error;
+        if (result.error) {
+          throw result.error;
+        }
 
         if (isSignup && !result.data.session) {
           message.textContent =
-            "Account created! Please check your email to confirm your account.";
+            "Account created! Please confirm your email. Then return here and Login.";
         } else {
-          message.textContent = "Login successful!";
-          showUser(result.data.user);
+          message.textContent =
+            "Login successful! Opening RAVI AI...";
+          window.location.assign(DASHBOARD_URL);
         }
 
       } catch (error) {
@@ -166,36 +210,23 @@
       }
     }
 
-    function showUser(user) {
-      if (!user) return;
+    async function checkLogin() {
+      const { data, error } =
+        await supabaseClient.auth.getSession();
 
-      document.getElementById("heading").textContent =
-        "Welcome to RAVI AI";
-
-      document.getElementById("message").textContent =
-        "Logged in as: " + user.email;
-
-      document.getElementById("email").hidden = true;
-      document.getElementById("password").hidden = true;
-      document.getElementById("mainBtn").hidden = true;
-      document.getElementById("switchBtn").hidden = true;
-      document.getElementById("logoutBtn").hidden = false;
-    }
-
-    async function logout() {
-      const { error } = await supabaseClient.auth.signOut();
-
-      document.getElementById("message").textContent =
-        error ? error.message : "Logged out successfully.";
-
-      if (!error) location.reload();
-    }
-
-    supabaseClient.auth.getSession().then(({ data }) => {
-      if (data.session) {
-        showUser(data.session.user);
+      if (error) {
+        document.getElementById("message").textContent =
+          error.message;
+        return;
       }
-    });
+
+      if (data.session) {
+        window.location.replace(DASHBOARD_URL);
+      }
+    }
+
+    checkLogin();
   </script>
+
 </body>
 </html>
