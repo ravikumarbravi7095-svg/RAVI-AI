@@ -1,112 +1,288 @@
 
 <!DOCTYPE html>
-<html lang="te">
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>RAVI AI - AI Creation Studio</title>
-  <style>
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #0b1020;
-      color: white;
-    }
-    header {
-      padding: 20px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: #151d35;
-    }
-    .logo { font-size: 26px; font-weight: bold; color: #7c9cff; }
-    select, button {
-      padding: 12px;
-      border-radius: 9px;
-      border: 0;
-      cursor: pointer;
-    }
-    main { max-width: 950px; margin: 45px auto; padding: 20px; }
-    h1 { font-size: 38px; text-align: center; }
-    .sub { text-align: center; color: #b9c4df; }
-    .tools {
-      display: grid;
-      grid-template-columns: repeat(auto-fit,minmax(210px,1fr));
-      gap: 16px;
-      margin-top: 35px;
-    }
-    .tool {
-      background: #182440;
-      border: 1px solid #34466e;
-      padding: 25px;
-      border-radius: 15px;
-    }
-    .tool h3 { color: #9bb5ff; }
-    .tool p { color: #c6cee0; }
-    .plan {
-      margin-top: 30px;
-      padding: 25px;
-      background: #182440;
-      border-radius: 15px;
-      text-align: center;
-    }
-    footer { text-align: center; padding: 30px; color: #aab4ca; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RAVI AI Studio</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#080d1b;color:white;font-family:Arial,sans-serif}
+header{padding:17px 5%;display:flex;justify-content:space-between;align-items:center;background:#111a2e;border-bottom:1px solid #27334d}
+.logo{font-size:25px;font-weight:bold;color:#55c8ff}
+button,select,textarea,input{font:inherit}
+button{cursor:pointer;border:0;border-radius:9px;padding:12px 17px;background:#168cff;color:white;font-weight:bold}
+.logout{background:#34445f}
+.container{max-width:1150px;margin:auto;padding:25px 18px}
+.welcome{margin-bottom:25px}
+.welcome h1{font-size:30px;margin-bottom:8px}
+.muted{color:#aab6cc}
+.section-title{font-size:21px;margin:25px 0 15px}
+.tools{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.tool{background:#141e33;border:1px solid #2b3a58;border-radius:14px;padding:20px;cursor:pointer;transition:.2s}
+.tool:hover,.tool.active{border-color:#42b9ff;background:#1a2a45}
+.tool .emoji{font-size:30px}
+.tool h3{font-size:16px;margin:12px 0 7px}
+.tool p{font-size:13px;color:#aab6cc;line-height:1.5}
+.panel{margin-top:24px;padding:22px;background:#141e33;border:1px solid #2b3a58;border-radius:15px}
+label{display:block;margin:16px 0 8px;font-weight:bold}
+textarea,input,select{width:100%;padding:13px;background:#0b1426;color:white;border:1px solid #34445f;border-radius:9px}
+textarea{min-height:110px;resize:vertical}
+select option{background:#0b1426}
+.fields{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+.upload{border:1px dashed #55a9e9;padding:18px;text-align:center;border-radius:10px}
+.generate{width:100%;margin-top:20px;padding:15px;font-size:16px}
+.notice{background:#28233a;border:1px solid #65518b;color:#e4d8ff;padding:13px;border-radius:9px;line-height:1.5;margin-top:16px}
+.plans{display:grid;grid-template-columns:repeat(2,1fr);gap:15px}
+.plan{background:#141e33;border:1px solid #2b3a58;padding:20px;border-radius:14px}
+.plan h3{color:#55c8ff}
+footer{text-align:center;color:#8b9ab5;padding:25px}
+@media(max-width:750px){.tools{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:450px){.tools,.plans,.fields{grid-template-columns:1fr}.welcome h1{font-size:25px}}
+</style>
 </head>
+
 <body>
-  <header>
-    <div class="logo">RAVI AI</div>
-    <select id="language" onchange="changeLanguage()">
-      <option value="te">తెలుగు</option>
-      <option value="en">English</option>
-    </select>
-  </header>
 
-  <main>
-    <h1 id="heading">మీ సొంత AI క్రియేషన్ స్టూడియో</h1>
-    <p class="sub" id="subtitle">మీ ఆలోచనలను వీడియోలు, చిత్రాలుగా మార్చుకోండి.</p>
+<header>
+  <div class="logo">RAVI AI</div>
+  <div>
+    <button class="logout" onclick="logout()">Logout</button>
+  </div>
+</header>
 
-    <div class="tools">
-      <div class="tool">
-        <h3>🎬 Text to Video</h3>
-        <p>టెక్స్ట్‌తో AI వీడియోలు సృష్టించండి.</p>
+<main class="container" id="dashboard" hidden>
+
+  <section class="welcome">
+    <h1>Welcome to RAVI AI Studio 🚀</h1>
+    <p class="muted">Create amazing AI videos and images in one place.</p>
+    <p id="userEmail" class="muted"></p>
+  </section>
+
+  <h2 class="section-title">AI Creation Tools</h2>
+
+  <section class="tools">
+    <div class="tool active" onclick="selectTool('text-video',this)">
+      <div class="emoji">🎬</div>
+      <h3>Text to Video</h3>
+      <p>Convert your text prompt into an AI video.</p>
+    </div>
+
+    <div class="tool" onclick="selectTool('text-image',this)">
+      <div class="emoji">🎨</div>
+      <h3>Text to Image</h3>
+      <p>Create images from your imagination.</p>
+    </div>
+
+    <div class="tool" onclick="selectTool('image-video',this)">
+      <div class="emoji">🖼️</div>
+      <h3>Image to Video</h3>
+      <p>Turn your images into animated videos.</p>
+    </div>
+
+    <div class="tool" onclick="selectTool('video-video',this)">
+      <div class="emoji">🎞️</div>
+      <h3>Video to Video</h3>
+      <p>Transform existing videos with AI.</p>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2 id="toolTitle">🎬 Text to Video</h2>
+    <p class="muted" id="toolDescription">Describe the video you want to create.</p>
+
+    <label for="prompt">Your Prompt</label>
+    <textarea id="prompt" placeholder="Describe your video or image here..."></textarea>
+
+    <div id="uploadArea" hidden>
+      <label for="mediaFile">Upload Image or Video</label>
+      <div class="upload">
+        <input id="mediaFile" type="file" accept="image/*">
+        <p class="muted">Choose a file from your device</p>
       </div>
-      <div class="tool">
-        <h3>🖼️ Text to Image</h3>
-        <p>మీ ఆలోచనలతో AI చిత్రాలు తయారు చేయండి.</p>
+    </div>
+
+    <div class="fields">
+      <div>
+        <label for="duration">Duration</label>
+        <select id="duration">
+          <option value="5">5 Seconds</option>
+          <option value="10">10 Seconds</option>
+          <option value="15" selected>15 Seconds</option>
+        </select>
       </div>
-      <div class="tool">
-        <h3>🎥 Image to Video</h3>
-        <p>చిత్రాలను వీడియోలుగా మార్చండి.</p>
+
+      <div>
+        <label for="quality">Video Quality</label>
+        <select id="quality">
+          <option>540p</option>
+          <option>720p</option>
+        </select>
       </div>
-      <div class="tool">
-        <h3>✨ Video to Video</h3>
-        <p>మీ వీడియోలను AIతో మార్చండి.</p>
+
+      <div>
+        <label for="ratio">Aspect Ratio</label>
+        <select id="ratio">
+          <option>16:9</option>
+          <option>9:16</option>
+          <option>1:1</option>
+          <option>4:3</option>
+        </select>
       </div>
+
+      <div>
+        <label for="voice">Audio Language</label>
+        <select id="voice">
+          <option>Telugu</option>
+          <option>English</option>
+          <option>Hindi</option>
+          <option>Tamil</option>
+          <option>Kannada</option>
+          <option>Malayalam</option>
+          <option>No Voice</option>
+        </select>
+      </div>
+    </div>
+
+    <button class="generate" onclick="generate()">Generate with RAVI AI ✨</button>
+
+    <div class="notice" id="status">
+      AI generation service ఇంకా కనెక్ట్ చేయలేదు. ఇది ప్రస్తుతం Dashboard interface మాత్రమే.
+    </div>
+  </section>
+
+  <h2 class="section-title">Our Plans</h2>
+
+  <section class="plans">
+    <div class="plan">
+      <h3>FREE PLAN</h3>
+      <h2>₹0 / Month</h2>
+      <p>✓ Up to 15 seconds per video</p>
+      <p>✓ Up to 59 generations per day</p>
+      <p>✓ 540p / 720p quality</p>
+      <p>✓ Multiple aspect ratios</p>
+      <p>✓ One generation at a time</p>
     </div>
 
     <div class="plan">
-      <h2>FREE PLAN</h2>
-      <p>రోజుకు గరిష్ఠంగా 59 వీడియోలు</p>
-      <p>ఒక్కో వీడియో గరిష్ఠంగా 15 సెకన్లు</p>
-      <hr>
-      <h2>PREMIUM PLAN</h2>
-      <h2>₹399 / నెల</h2>
-      <p>పూర్తి వీడియో ప్రాజెక్టులు, అధిక నాణ్యతా ఎంపికలు</p>
+      <h3>PREMIUM PLAN</h3>
+      <h2>₹399 / Month</h2>
+      <p>✓ Up to 20-minute final videos</p>
+      <p>✓ Up to 80 generations per day</p>
+      <p>✓ 1080p / 4K / 8K options</p>
+      <p>✓ All aspect ratios</p>
+      <p>✓ Generation queue</p>
+      <button onclick="alert('Premium payment integration is coming soon.')">Premium Coming Soon</button>
     </div>
-  </main>
+  </section>
 
-  <footer>© 2026 RAVI AI. All Rights Reserved.</footer>
+</main>
 
-  <script>
-    function changeLanguage() {
-      const lang = document.getElementById("language").value;
-      document.getElementById("heading").textContent =
-        lang === "te" ? "మీ సొంత AI క్రియేషన్ స్టూడియో" : "Your Own AI Creation Studio";
-      document.getElementById("subtitle").textContent =
-        lang === "te" ? "మీ ఆలోచనలను వీడియోలు, చిత్రాలుగా మార్చుకోండి." : "Turn your ideas into videos and images.";
-    }
-  </script>
+<div id="loading" style="text-align:center;padding:70px">
+  Loading RAVI AI...
+</div>
+
+<footer>© 2026 RAVI AI | Created for your imagination</footer>
+
+<script>
+const SUPABASE_URL = "https://kezfijofsoshaybfwxmf.supabase.co";
+const SUPABASE_KEY = "sb_publishable_TPZ-w9g6zedWYexUBVSTMA_l76XYhzY";
+
+const supabaseClient = window.supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_KEY
+);
+
+const LOGIN_URL = "/RAVI-AI/login.html";
+
+async function checkUser(){
+  const {data,error} = await supabaseClient.auth.getSession();
+
+  document.getElementById("loading").hidden = true;
+
+  if(error || !data.session){
+    window.location.replace(LOGIN_URL);
+    return;
+  }
+
+  document.getElementById("dashboard").hidden = false;
+  document.getElementById("userEmail").textContent =
+    "Logged in as: " + data.session.user.email;
+}
+
+async function logout(){
+  const {error} = await supabaseClient.auth.signOut();
+
+  if(error){
+    alert(error.message);
+    return;
+  }
+
+  window.location.replace(LOGIN_URL);
+}
+
+let currentTool = "text-video";
+
+function selectTool(tool,element){
+  currentTool = tool;
+
+  document.querySelectorAll(".tool").forEach(item=>{
+    item.classList.remove("active");
+  });
+
+  element.classList.add("active");
+
+  const titles = {
+    "text-video":"🎬 Text to Video",
+    "text-image":"🎨 Text to Image",
+    "image-video":"🖼️ Image to Video",
+    "video-video":"🎞️ Video to Video"
+  };
+
+  const descriptions = {
+    "text-video":"Describe the video you want to create.",
+    "text-image":"Describe the image you want to create.",
+    "image-video":"Upload an image and describe its animation.",
+    "video-video":"Upload a video and describe the transformation."
+  };
+
+  document.getElementById("toolTitle").textContent = titles[tool];
+  document.getElementById("toolDescription").textContent = descriptions[tool];
+
+  const uploadArea = document.getElementById("uploadArea");
+  const fileInput = document.getElementById("mediaFile");
+
+  uploadArea.hidden = tool !== "image-video" && tool !== "video-video";
+
+  fileInput.accept = tool === "video-video" ? "video/*" : "image/*";
+  fileInput.value = "";
+
+  document.getElementById("duration").disabled = tool === "text-image";
+  document.getElementById("quality").disabled = tool === "text-image";
+}
+
+function generate(){
+  const prompt = document.getElementById("prompt").value.trim();
+  const file = document.getElementById("mediaFile").files[0];
+
+  if(!prompt){
+    alert("Please enter your prompt.");
+    return;
+  }
+
+  if((currentTool === "image-video" || currentTool === "video-video") && !file){
+    alert("Please upload a file first.");
+    return;
+  }
+
+  document.getElementById("status").textContent =
+    "Your request is ready. AI provider API and secure generation backend must be connected before real generation can begin.";
+}
+
+checkUser();
+</script>
+
 </body>
 </html>
