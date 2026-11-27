@@ -1,73 +1,201 @@
 
 <!DOCTYPE html>
-<html lang="te">
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>RAVI AI - Login</title>
-<style>
-*{box-sizing:border-box}
-body{
- margin:0;min-height:100vh;display:flex;
- justify-content:center;align-items:center;
- font-family:Arial,sans-serif;
- background:#0b1020;color:white;padding:20px
-}
-.container{
- width:100%;max-width:420px;padding:30px;
- background:#182440;border-radius:18px;
- border:1px solid #34466e
-}
-h1{text-align:center;color:#8caaff}
-p{text-align:center;color:#b9c4df}
-input{
- width:100%;padding:14px;margin:9px 0;
- border-radius:8px;border:1px solid #526487;
- background:#101a30;color:white
-}
-button{
- width:100%;padding:14px;margin-top:12px;
- border:0;border-radius:8px;
- background:#567cff;color:white;
- font-size:16px;cursor:pointer
-}
-.switch{text-align:center;margin-top:20px;cursor:pointer;color:#9bb5ff}
-#message{text-align:center;margin-top:15px;color:#ffcf70}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RAVI AI - Login</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #080d1b;
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    .box {
+      background: #141d32;
+      padding: 30px;
+      border-radius: 16px;
+      width: 85%;
+      max-width: 380px;
+      text-align: center;
+    }
+
+    h1 { color: #55c8ff; }
+
+    input, button {
+      width: 100%;
+      padding: 13px;
+      margin: 9px 0;
+      box-sizing: border-box;
+      border-radius: 8px;
+      border: none;
+      font-size: 16px;
+    }
+
+    input { background: white; color: #111; }
+
+    button {
+      background: #168cff;
+      color: white;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .secondary { background: #34445f; }
+
+    #message {
+      overflow-wrap: anywhere;
+      line-height: 1.5;
+    }
+  </style>
 </head>
+
 <body>
-<div class="container">
-<h1>RAVI AI</h1>
-<p id="heading">మీ అకౌంట్‌లోకి లాగిన్ అవ్వండి</p>
+  <div class="box">
+    <h1>RAVI AI</h1>
+    <h3 id="heading">Create Account</h3>
 
-<form id="loginForm">
-<input id="name" placeholder="మీ పేరు" style="display:none">
-<input id="email" type="email" placeholder="Email Address" required>
-<input id="password" type="password" placeholder="Password" required minlength="6">
-<button id="submitBtn" type="submit">Login</button>
-</form>
+    <input id="email" type="email" placeholder="Email Address">
+    <input id="password" type="password" placeholder="Password">
 
-<div class="switch" onclick="toggleMode()" id="switchText">
-కొత్త యూజరా? Signup చేయండి
-</div>
-<div id="message"></div>
-</div>
+    <button id="mainBtn" onclick="submitForm()">Sign Up</button>
 
-<script>
-let signup=false;
-function toggleMode(){
- signup=!signup;
- document.getElementById("name").style.display=signup?"block":"none";
- document.getElementById("heading").textContent=signup?"కొత్త అకౌంట్ సృష్టించండి":"మీ అకౌంట్‌లోకి లాగిన్ అవ్వండి";
- document.getElementById("submitBtn").textContent=signup?"Signup":"Login";
- document.getElementById("switchText").textContent=signup?"ఇప్పటికే అకౌంట్ ఉందా? Login చేయండి":"కొత్త యూజరా? Signup చేయండి";
- document.getElementById("message").textContent="";
-}
-document.getElementById("loginForm").addEventListener("submit",function(e){
- e.preventDefault();
- document.getElementById("message").textContent=
- "Login వ్యవస్థను సక్రియం చేయడానికి సురక్షితమైన Auth సేవను కనెక్ట్ చేయాలి.";
-});
-</script>
+    <button class="secondary" id="switchBtn" onclick="switchMode()">
+      Already have an account? Login
+    </button>
+
+    <button class="secondary" id="logoutBtn"
+      onclick="logout()" hidden>Logout</button>
+
+    <p id="message"></p>
+  </div>
+
+  <script>
+    const SUPABASE_URL =
+      "https://kezfijofsoshaybfwxmf.supabase.co";
+
+    const SUPABASE_KEY =
+      "sb_publishable_TPZ-w9g6zedWYexUBVSTMA_l76XYhzY";
+
+    const supabaseClient = window.supabase.createClient(
+      SUPABASE_URL,
+      SUPABASE_KEY
+    );
+
+    let isSignup = true;
+
+    function switchMode() {
+      isSignup = !isSignup;
+
+      document.getElementById("heading").textContent =
+        isSignup ? "Create Account" : "Welcome Back";
+
+      document.getElementById("mainBtn").textContent =
+        isSignup ? "Sign Up" : "Login";
+
+      document.getElementById("switchBtn").textContent =
+        isSignup
+          ? "Already have an account? Login"
+          : "New user? Create Account";
+
+      document.getElementById("message").textContent = "";
+    }
+
+    async function submitForm() {
+      const email =
+        document.getElementById("email").value.trim();
+
+      const password =
+        document.getElementById("password").value;
+
+      const message = document.getElementById("message");
+      const button = document.getElementById("mainBtn");
+
+      if (!email || !password) {
+        message.textContent = "Enter email and password.";
+        return;
+      }
+
+      if (password.length < 6) {
+        message.textContent =
+          "Password must be at least 6 characters.";
+        return;
+      }
+
+      button.disabled = true;
+      message.textContent = "Please wait...";
+
+      try {
+        let result;
+
+        if (isSignup) {
+          result = await supabaseClient.auth.signUp({
+            email: email,
+            password: password
+          });
+        } else {
+          result = await supabaseClient.auth.signInWithPassword({
+            email: email,
+            password: password
+          });
+        }
+
+        if (result.error) throw result.error;
+
+        if (isSignup && !result.data.session) {
+          message.textContent =
+            "Account created! Please check your email to confirm your account.";
+        } else {
+          message.textContent = "Login successful!";
+          showUser(result.data.user);
+        }
+
+      } catch (error) {
+        message.textContent = error.message;
+      } finally {
+        button.disabled = false;
+      }
+    }
+
+    function showUser(user) {
+      if (!user) return;
+
+      document.getElementById("heading").textContent =
+        "Welcome to RAVI AI";
+
+      document.getElementById("message").textContent =
+        "Logged in as: " + user.email;
+
+      document.getElementById("email").hidden = true;
+      document.getElementById("password").hidden = true;
+      document.getElementById("mainBtn").hidden = true;
+      document.getElementById("switchBtn").hidden = true;
+      document.getElementById("logoutBtn").hidden = false;
+    }
+
+    async function logout() {
+      const { error } = await supabaseClient.auth.signOut();
+
+      document.getElementById("message").textContent =
+        error ? error.message : "Logged out successfully.";
+
+      if (!error) location.reload();
+    }
+
+    supabaseClient.auth.getSession().then(({ data }) => {
+      if (data.session) {
+        showUser(data.session.user);
+      }
+    });
+  </script>
 </body>
 </html>
