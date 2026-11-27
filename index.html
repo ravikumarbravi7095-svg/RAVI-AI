@@ -1,0 +1,112 @@
+
+<!DOCTYPE html>
+<html lang="te">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RAVI AI - AI Creation Studio</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #0b1020;
+      color: white;
+    }
+    header {
+      padding: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #151d35;
+    }
+    .logo { font-size: 26px; font-weight: bold; color: #7c9cff; }
+    select, button {
+      padding: 12px;
+      border-radius: 9px;
+      border: 0;
+      cursor: pointer;
+    }
+    main { max-width: 950px; margin: 45px auto; padding: 20px; }
+    h1 { font-size: 38px; text-align: center; }
+    .sub { text-align: center; color: #b9c4df; }
+    .tools {
+      display: grid;
+      grid-template-columns: repeat(auto-fit,minmax(210px,1fr));
+      gap: 16px;
+      margin-top: 35px;
+    }
+    .tool {
+      background: #182440;
+      border: 1px solid #34466e;
+      padding: 25px;
+      border-radius: 15px;
+    }
+    .tool h3 { color: #9bb5ff; }
+    .tool p { color: #c6cee0; }
+    .plan {
+      margin-top: 30px;
+      padding: 25px;
+      background: #182440;
+      border-radius: 15px;
+      text-align: center;
+    }
+    footer { text-align: center; padding: 30px; color: #aab4ca; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">RAVI AI</div>
+    <select id="language" onchange="changeLanguage()">
+      <option value="te">తెలుగు</option>
+      <option value="en">English</option>
+    </select>
+  </header>
+
+  <main>
+    <h1 id="heading">మీ సొంత AI క్రియేషన్ స్టూడియో</h1>
+    <p class="sub" id="subtitle">మీ ఆలోచనలను వీడియోలు, చిత్రాలుగా మార్చుకోండి.</p>
+
+    <div class="tools">
+      <div class="tool">
+        <h3>🎬 Text to Video</h3>
+        <p>టెక్స్ట్‌తో AI వీడియోలు సృష్టించండి.</p>
+      </div>
+      <div class="tool">
+        <h3>🖼️ Text to Image</h3>
+        <p>మీ ఆలోచనలతో AI చిత్రాలు తయారు చేయండి.</p>
+      </div>
+      <div class="tool">
+        <h3>🎥 Image to Video</h3>
+        <p>చిత్రాలను వీడియోలుగా మార్చండి.</p>
+      </div>
+      <div class="tool">
+        <h3>✨ Video to Video</h3>
+        <p>మీ వీడియోలను AIతో మార్చండి.</p>
+      </div>
+    </div>
+
+    <div class="plan">
+      <h2>FREE PLAN</h2>
+      <p>రోజుకు గరిష్ఠంగా 59 వీడియోలు</p>
+      <p>ఒక్కో వీడియో గరిష్ఠంగా 15 సెకన్లు</p>
+      <hr>
+      <h2>PREMIUM PLAN</h2>
+      <h2>₹399 / నెల</h2>
+      <p>పూర్తి వీడియో ప్రాజెక్టులు, అధిక నాణ్యతా ఎంపికలు</p>
+    </div>
+  </main>
+
+  <footer>© 2026 RAVI AI. All Rights Reserved.</footer>
+
+  <script>
+    function changeLanguage() {
+      const lang = document.getElementById("language").value;
+      document.getElementById("heading").textContent =
+        lang === "te" ? "మీ సొంత AI క్రియేషన్ స్టూడియో" : "Your Own AI Creation Studio";
+      document.getElementById("subtitle").textContent =
+        lang === "te" ? "మీ ఆలోచనలను వీడియోలు, చిత్రాలుగా మార్చుకోండి." : "Turn your ideas into videos and images.";
+    }
+  </script>
+</body>
+</html>
