@@ -1,0 +1,73 @@
+
+<!DOCTYPE html>
+<html lang="te">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RAVI AI - Login</title>
+<style>
+*{box-sizing:border-box}
+body{
+ margin:0;min-height:100vh;display:flex;
+ justify-content:center;align-items:center;
+ font-family:Arial,sans-serif;
+ background:#0b1020;color:white;padding:20px
+}
+.container{
+ width:100%;max-width:420px;padding:30px;
+ background:#182440;border-radius:18px;
+ border:1px solid #34466e
+}
+h1{text-align:center;color:#8caaff}
+p{text-align:center;color:#b9c4df}
+input{
+ width:100%;padding:14px;margin:9px 0;
+ border-radius:8px;border:1px solid #526487;
+ background:#101a30;color:white
+}
+button{
+ width:100%;padding:14px;margin-top:12px;
+ border:0;border-radius:8px;
+ background:#567cff;color:white;
+ font-size:16px;cursor:pointer
+}
+.switch{text-align:center;margin-top:20px;cursor:pointer;color:#9bb5ff}
+#message{text-align:center;margin-top:15px;color:#ffcf70}
+</style>
+</head>
+<body>
+<div class="container">
+<h1>RAVI AI</h1>
+<p id="heading">మీ అకౌంట్‌లోకి లాగిన్ అవ్వండి</p>
+
+<form id="loginForm">
+<input id="name" placeholder="మీ పేరు" style="display:none">
+<input id="email" type="email" placeholder="Email Address" required>
+<input id="password" type="password" placeholder="Password" required minlength="6">
+<button id="submitBtn" type="submit">Login</button>
+</form>
+
+<div class="switch" onclick="toggleMode()" id="switchText">
+కొత్త యూజరా? Signup చేయండి
+</div>
+<div id="message"></div>
+</div>
+
+<script>
+let signup=false;
+function toggleMode(){
+ signup=!signup;
+ document.getElementById("name").style.display=signup?"block":"none";
+ document.getElementById("heading").textContent=signup?"కొత్త అకౌంట్ సృష్టించండి":"మీ అకౌంట్‌లోకి లాగిన్ అవ్వండి";
+ document.getElementById("submitBtn").textContent=signup?"Signup":"Login";
+ document.getElementById("switchText").textContent=signup?"ఇప్పటికే అకౌంట్ ఉందా? Login చేయండి":"కొత్త యూజరా? Signup చేయండి";
+ document.getElementById("message").textContent="";
+}
+document.getElementById("loginForm").addEventListener("submit",function(e){
+ e.preventDefault();
+ document.getElementById("message").textContent=
+ "Login వ్యవస్థను సక్రియం చేయడానికి సురక్షితమైన Auth సేవను కనెక్ట్ చేయాలి.";
+});
+</script>
+</body>
+</html>
