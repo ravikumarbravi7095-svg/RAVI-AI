@@ -158,7 +158,14 @@ Generate with RAVI AI ✨
 <div class="notice" id="status">
 Enter your prompt and click Generate to create a video.
 </div>
-
+<button
+  id="retryButton"
+  onclick="retryVideo()"
+  hidden
+  style="width:100%;margin-top:12px;background:#16a36a"
+>
+  🔄 Retry Video
+</button>
 <div class="result" id="imageResult" hidden>
 <h3>🎨 Your Generated Image</h3>
 <img id="generatedImage" alt="RAVI AI generated image">
