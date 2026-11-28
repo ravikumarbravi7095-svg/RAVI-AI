@@ -439,7 +439,17 @@ videoData.error || "Video generation failed. Please try again."
 
 throw new Error("Video is taking longer than expected. Please check again later.");
 }
+async function retryVideo(){
 
+document.getElementById("retryButton").hidden = true;
+
+if(currentTool !== "text-video"){
+currentTool = "text-video";
+}
+
+await generate();
+
+}
 async function generate(){
 
 const prompt = document.getElementById("prompt").value.trim();
