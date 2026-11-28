@@ -505,7 +505,22 @@ status.textContent = "🎉 Your image was generated successfully!";
 
 }catch(error){
 
-status.textContent = "Error: " + error.message;
+const message = error.message || "";
+
+if(message.includes("video_queue_full") ||
+   message.toLowerCase().includes("video queue is full") ||
+   message.toLowerCase().includes("queue full")){
+
+status.textContent =
+"⚠️ ప్రస్తుతం AI వీడియో సర్వర్ బిజీగా ఉంది. దయచేసి 30–60 సెకన్లు వేచి ఉండి Retry Video బటన్ క్లిక్ చేయండి.";
+
+document.getElementById("retryButton").hidden = false;
+
+}else{
+
+status.textContent = "❌ సమస్య వచ్చింది: " + message;
+
+}
 
 }finally{
 
