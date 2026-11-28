@@ -39,7 +39,7 @@ select option{background:#0b1426}
 .plan{background:#141e33;border:1px solid #2b3a58;padding:20px;border-radius:14px}
 .plan h3{color:#55c8ff}
 .result{margin-top:20px;padding:15px;background:#0b1426;border:1px solid #34445f;border-radius:12px}
-.result img{display:block;width:100%;max-width:800px;margin:15px auto;border-radius:10px}
+.result img,.result video{display:block;width:100%;max-width:800px;margin:15px auto;border-radius:10px}
 .download{display:inline-block;margin-top:12px;color:#55c8ff}
 footer{text-align:center;color:#8b9ab5;padding:25px}
 @media(max-width:750px){.tools{grid-template-columns:repeat(2,1fr)}}
@@ -110,15 +110,14 @@ footer{text-align:center;color:#8b9ab5;padding:25px}
 <select id="duration">
 <option value="5">5 Seconds</option>
 <option value="10">10 Seconds</option>
-<option value="15" selected>15 Seconds</option>
+<option value="12">12 Seconds</option>
 </select>
 </div>
 
 <div>
 <label for="quality">Video Quality</label>
 <select id="quality">
-<option>540p</option>
-<option>720p</option>
+<option value="720P">720P</option>
 </select>
 </div>
 
@@ -129,6 +128,8 @@ footer{text-align:center;color:#8b9ab5;padding:25px}
 <option>9:16</option>
 <option>1:1</option>
 <option>4:3</option>
+<option>3:4</option>
+<option>21:9</option>
 </select>
 </div>
 
@@ -146,18 +147,28 @@ footer{text-align:center;color:#8b9ab5;padding:25px}
 </div>
 </div>
 
+<p class="muted" id="providerNote">
+Text-to-Video currently supports 4–12 seconds at 720P.
+</p>
+
 <button class="generate" id="generateButton" onclick="generate()">
 Generate with RAVI AI ✨
 </button>
 
 <div class="notice" id="status">
-Select Text to Image to test AI image generation.
+Enter your prompt and click Generate to create a video.
 </div>
 
 <div class="result" id="imageResult" hidden>
 <h3>🎨 Your Generated Image</h3>
 <img id="generatedImage" alt="RAVI AI generated image">
 <a id="downloadImage" class="download" download="ravi-ai-image.jpg">Download Image</a>
+</div>
+
+<div class="result" id="videoResult" hidden>
+<h3>🎬 Your Generated Video</h3>
+<video id="generatedVideo" controls playsinline></video>
+<a id="downloadVideo" class="download" target="_blank" rel="noopener">Open / Download Video</a>
 </div>
 </section>
 
@@ -167,9 +178,9 @@ Select Text to Image to test AI image generation.
 <div class="plan">
 <h3>FREE PLAN</h3>
 <h2>₹0 / Month</h2>
-<p>✓ Up to 15 seconds per video</p>
+<p>✓ Up to 15 seconds per video (plan limit)</p>
 <p>✓ Up to 59 generations per day</p>
-<p>✓ 540p / 720p quality</p>
+<p>✓ 540p / 720p quality (plan options)</p>
 <p>✓ Multiple aspect ratios</p>
 <p>✓ One generation at a time</p>
 </div>
@@ -179,7 +190,7 @@ Select Text to Image to test AI image generation.
 <h2>₹399 / Month</h2>
 <p>✓ Up to 20-minute final videos</p>
 <p>✓ Up to 80 generations per day</p>
-<p>✓ 1080p / 4K / 8K options</p>
+<p>✓ 1080p / 2K / 4K / 8K options planned</p>
 <p>✓ All aspect ratios</p>
 <p>✓ Generation queue</p>
 <button onclick="alert('Premium payment integration is coming soon.')">Premium Coming Soon</button>
@@ -270,42 +281,191 @@ uploadArea.hidden = tool !== "image-video" && tool !== "video-video";
 fileInput.accept = tool === "video-video" ? "video/*" : "image/*";
 fileInput.value = "";
 
-document.getElementById("duration").disabled = tool === "text-image";
-document.getElementById("quality").disabled = tool === "text-image";
+const duration = document.getElementById("duration");
+const quality = document.getElementById("quality");
+const ratio = document.getElementById("ratio");
+const providerNote = document.getElementById("providerNote");
+
+duration.disabled = tool === "text-image";
+quality.disabled = tool === "text-image";
+ratio.disabled = tool === "text-image";
+
+if(tool === "text-video"){
+duration.innerHTML = `
+<option value="5">5 Seconds</option>
+<option value="10">10 Seconds</option>
+<option value="12">12 Seconds</option>`;
+duration.value = "5";
+quality.innerHTML = `<option value="720P">720P</option>`;
+quality.value = "720P";
+providerNote.textContent =
+"Agnes AI currently supports 4–12 seconds at 720P for this model.";
+}
+
+if(tool === "text-image"){
+duration.disabled = true;
+quality.disabled = true;
+ratio.disabled = true;
+providerNote.textContent = "Text-to-Image uses the connected image generation service.";
+}
+
+if(tool === "image-video" || tool === "video-video"){
+providerNote.textContent =
+"This AI tool is not connected yet. Text-to-Video and Text-to-Image are the currently connected tools.";
+}
 
 document.getElementById("imageResult").hidden = true;
+document.getElementById("videoResult").hidden = true;
 
 document.getElementById("status").textContent =
 tool === "text-image"
 ? "Enter an image prompt and click Generate."
-: "This AI tool is not connected yet. Text to Image is the first connected tool.";
+: tool === "text-video"
+? "Enter a video prompt and click Generate."
+: "This AI tool is not connected yet.";
+}
+
+function sleep(ms){
+return new Promise(resolve => setTimeout(resolve,ms));
+}
+
+async function generateVideo(prompt){
+const status = document.getElementById("status");
+const seconds = document.getElementById("duration").value;
+const aspectRatio = document.getElementById("ratio").value;
+
+status.textContent = "Submitting your video request to RAVI AI...";
+
+const createResponse = await fetch(
+BACKEND_URL + "/generate-video",
+{
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify({
+prompt:prompt,
+seconds:seconds,
+aspect_ratio:aspectRatio
+})
+}
+);
+
+const createData = await createResponse.json();
+
+if(!createResponse.ok || !createData.success){
+throw new Error(
+createData.details?.error?.message ||
+createData.details?.message ||
+createData.error ||
+"Could not start video generation."
+);
+}
+
+const videoId =
+createData.video_id ||
+createData.task?.video_id;
+
+if(!videoId){
+throw new Error("Video task ID was not returned by the provider.");
+}
+
+status.textContent = "Video generation started. Please wait...";
+
+for(let attempt = 0; attempt < 300; attempt++){
+
+await sleep(2000);
+
+const statusResponse = await fetch(
+BACKEND_URL + "/video-status?video_id=" +
+encodeURIComponent(videoId)
+);
+
+const statusData = await statusResponse.json();
+
+if(!statusResponse.ok || !statusData.success){
+throw new Error(
+statusData.error || "Could not check video status."
+);
+}
+
+const videoData = statusData.video || {};
+const videoStatus = String(videoData.status || "").toLowerCase();
+const progress = videoData.progress;
+
+if(progress !== undefined){
+status.textContent =
+"Video generating... Progress: " + progress;
+}else{
+status.textContent = "Video generating... Please wait.";
+}
+
+if(videoStatus === "completed"){
+
+const videoUrl =
+videoData.url ||
+videoData.video_url ||
+videoData.output?.url;
+
+if(!videoUrl){
+throw new Error("Video completed, but no video URL was returned.");
+}
+
+const videoElement = document.getElementById("generatedVideo");
+const downloadElement = document.getElementById("downloadVideo");
+
+videoElement.src = videoUrl;
+downloadElement.href = videoUrl;
+
+document.getElementById("videoResult").hidden = false;
+
+status.textContent = "🎉 Your video was generated successfully!";
+return;
+}
+
+if(videoStatus === "failed" || videoStatus === "error"){
+throw new Error(
+videoData.error || "Video generation failed. Please try again."
+);
+}
+}
+
+throw new Error("Video is taking longer than expected. Please check again later.");
 }
 
 async function generate(){
 
 const prompt = document.getElementById("prompt").value.trim();
-const file = document.getElementById("mediaFile").files[0];
 const status = document.getElementById("status");
 const button = document.getElementById("generateButton");
-const resultArea = document.getElementById("imageResult");
+const imageResult = document.getElementById("imageResult");
+const videoResult = document.getElementById("videoResult");
 
 if(!prompt){
 alert("Please enter your prompt.");
 return;
 }
 
-if(currentTool !== "text-image"){
-status.textContent =
-"This AI tool is not connected yet. Text to Image is currently being tested.";
+if(currentTool === "image-video" || currentTool === "video-video"){
+status.textContent = "This AI tool is not connected yet.";
 return;
 }
 
-resultArea.hidden = true;
+imageResult.hidden = true;
+videoResult.hidden = true;
+
 button.disabled = true;
-button.textContent = "Generating Image...";
-status.textContent = "Please wait. RAVI AI is creating your image...";
+button.textContent = "Generating...";
 
 try{
+
+if(currentTool === "text-video"){
+
+await generateVideo(prompt);
+
+}else if(currentTool === "text-image"){
+
+status.textContent = "Please wait. RAVI AI is creating your image...";
 
 const response = await fetch(
 BACKEND_URL + "/generate-image",
@@ -332,8 +492,9 @@ const download = document.getElementById("downloadImage");
 image.src = data.image;
 download.href = data.image;
 
-resultArea.hidden = false;
+imageResult.hidden = false;
 status.textContent = "🎉 Your image was generated successfully!";
+}
 
 }catch(error){
 
